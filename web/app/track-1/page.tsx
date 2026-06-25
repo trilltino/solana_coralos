@@ -58,7 +58,6 @@ export default function Track1Page() {
   const [agents, setAgents] = useState<AgentStatus[]>([
     { id: 'seller-agent', label: 'Seller Agent', status: 'idle' },
     { id: 'buyer-agent', label: 'Buyer Agent (Claude)', status: 'idle' },
-    { id: 'helius-monitor', label: 'Helius Monitor', status: 'idle' },
   ])
   const [feed, setFeed] = useState<SessionEvent[]>([])
   const [totalPaid, setTotalPaid] = useState(0)

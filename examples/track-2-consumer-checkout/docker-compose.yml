@@ -1,6 +1,6 @@
-# Track 3 — Consumer Checkout (Phantom wallet)
+# Track 2 — Consumer Checkout (Phantom wallet)
 # Usage: docker compose up
-# Then open: http://localhost:3000/track-3
+# Then open: http://localhost:3000/track-2
 #
 # Human connects Phantom, pays SOL, gets result instantly
 # Fork: coral-agents/seller-agent/src/service.ts
@@ -8,7 +8,7 @@
 services:
   coral:
     image: ghcr.io/coral-protocol/coral-server:latest
-    container_name: coral-track-3
+    container_name: coral-track-2
     ports:
       - "5555:5555"
     environment:
@@ -24,13 +24,13 @@ services:
       - AMOUNT_SOL=${PRICE_SOL:-0.00005}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ../../docs/coral/track-3-config.toml:/config/config.toml:ro
+      - ../../docs/coral/track-2-config.toml:/config/config.toml:ro
       - ../../coral-agents:/agents:ro
     restart: unless-stopped
 
   web:
     image: ghcr.io/trilltino/web:latest
-    container_name: web-track-3
+    container_name: web-track-2
     ports:
       - "3000:3000"
     environment:
@@ -43,7 +43,7 @@ services:
 
   api-ts:
     image: ghcr.io/trilltino/api-ts:latest
-    container_name: api-ts-track-3
+    container_name: api-ts-track-2
     ports:
       - "8081:8081"
     environment:

@@ -11,8 +11,7 @@ const WalletMultiButton = dynamic(
 
 const TRACKS = [
   { href: '/track-1', label: 'Track 1', sub: 'Pay-Per-Call' },
-  { href: '/track-2', label: 'Track 2', sub: 'Agent Trading' },
-  { href: '/track-3', label: 'Track 3', sub: 'Checkout' },
+  { href: '/track-2', label: 'Track 2', sub: 'Checkout' },
 ]
 
 export function Header() {

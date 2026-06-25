@@ -87,7 +87,7 @@ export default function Track3Page() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 badge-green mb-4 px-3 py-1">
             <span className="w-1.5 h-1.5 rounded-full bg-solana-green animate-pulse" />
-            <span className="text-xs">Track 3 — Consumer Checkout</span>
+            <span className="text-xs">Track 2 — Consumer Checkout</span>
           </div>
           <h1 className="text-3xl font-bold mb-2">⚡ Instant Crypto News</h1>
           <p className="text-gray-400 text-sm">
