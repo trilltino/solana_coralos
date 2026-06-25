@@ -177,14 +177,19 @@ services:
 
 ## 7. Verification gates (must pass, in order)
 
-| Gate | Proves | How |
+| Gate | Proves | Status |
 |---|---|---|
-| **G1** | stock coral-server boots wallet-free; agents register | `docker compose up coral`; `localAgentRescanTimer` picks up `/agents/*`; smoke-mcp echo still GREEN |
-| **G2** | autonomous loop settles over CoralOS | `autonomous/start.ts` → session [buyer,seller] → buyer pays seller on-chain → `DELIVERED` in thread → tx on explorer |
-| **G3** | human path delivers over CoralOS | bridge order → Phantom pays → `DELIVERED` returned to browser |
+| **G1** | stock coral-server boots wallet-free; agents register | ✅ **GREEN** (2026-06-25) — `coral-server:latest` booted with the wallet-free `coral.toml` ("Responding at 5555"); all 4 agents registered, no wallet errors. |
+| **G2** | autonomous loop settles over CoralOS | ✅ **GREEN** (2026-06-25) — `start.ts` → session [buyer,seller] → buyer paid 0.0001 SOL on devnet → seller verified on-chain → delivered live Jupiter quote → looped. Real txs `3pBKjz…`, `2oQtTe…`. |
+| **G3** | human path delivers over CoralOS | ⏳ pending — needs the bridge (Step 4). |
 
 G2 is the headline proof: it fuses the already-green MCP handshake (Gate A) and on-chain SOL
-settlement (Gate B) into one continuous loop **coordinated by CoralOS**.
+settlement (Gate B) into one continuous loop **coordinated by stock CoralOS**.
+
+> **Required-options gotcha (resolved):** coral has no default for `BUYER_KEYPAIR_B58` /
+> `SELLER_WALLET`, so they must be passed in the session request as typed options
+> (`{type:"string"|"f64", value}`) — see `start.ts`. Without them the buyer crashes on startup
+> and never spawns.
 
 ---
 
