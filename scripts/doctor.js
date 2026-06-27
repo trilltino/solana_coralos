@@ -2,7 +2,7 @@
 // `node scripts/doctor.js`  (or `just doctor`)
 //
 // One command that answers "am I ready to build?" — checks Node, Docker, your wallets,
-// and coral/bridge, then (if the stack is up) runs ONE real payment end-to-end.
+// and the coral + feed stack, then points you at the live dashboard.
 // All green = start building. Each failure prints the exact fix.
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js'
@@ -66,34 +66,20 @@ if (!existsSync(envPath)) {
 
 // ── 3. Stack ──────────────────────────────────────────────────────────────────
 console.log(c('1', '\nStack'))
-const coralUp  = await reachable('http://localhost:5555')
-const bridgeUp = await reachable('http://localhost:3010')
-coralUp  ? ok('coral-server reachable on :5555')  : warn('coral-server not reachable on :5555', 'start it: docker compose up -d coral bridge')
-bridgeUp ? ok('bridge reachable on :3010')        : warn('bridge not reachable on :3010',        'start it: docker compose up -d coral bridge')
+const coralUp = await reachable('http://localhost:5555')
+const feedUp  = await reachable('http://localhost:4000/api/health')
+coralUp ? ok('coral-server reachable on :5555') : warn('coral-server not reachable on :5555', 'start it: docker compose up -d coral')
+feedUp  ? ok('feed server reachable on :4000')  : warn('feed server not reachable on :4000',  'start the dashboard: node scripts/dashboard.js  (or: npm run dev)')
 
-// ── 4. End-to-end payment (only if the stack + wallets are ready) ─────────────
-console.log(c('1', '\nEnd-to-end payment'))
-const walletsReady = fails === 0 || (seller && buyer)
-if (!bridgeUp) {
-  warn('skipped — bridge is not up', 'bring the stack up, then re-run `just doctor`')
+// ── 4. Live market (only if the stack is up) ─────────────────────────────────
+console.log(c('1', '\nLive market'))
+const walletsReady = seller && buyer
+if (!coralUp || !feedUp) {
+  warn('skipped — bring the stack up first', 'run: npm run dev   (or: docker compose up -d coral && node scripts/dashboard.js)')
 } else if (!walletsReady) {
-  warn('skipped — fund the wallets first')
+  warn('skipped — fund the wallets first', 'node scripts/setup.js, then fund both at https://faucet.solana.com')
 } else {
-  try {
-    process.stdout.write('  .... starting an autonomous buyer↔seller payment')
-    await fetch('http://localhost:3010/autonomous/start', { method: 'POST' })
-    let settled = false
-    for (let i = 0; i < 30 && !settled; i++) {       // ~60s budget
-      await sleep(2000); process.stdout.write('.')
-      const feed = await fetch('http://localhost:3010/autonomous/feed').then(r => r.json()).catch(() => ({}))
-      settled = (feed.messages || []).some(m => /DELIVERED/i.test(m.text))
-    }
-    process.stdout.write('\n')
-    settled ? ok('a real on-chain payment settled and the seller delivered')
-            : warn('no DELIVERED seen within 60s', 'check: docker compose logs -f coral  (agents can take ~20s on first run)')
-  } catch (e) {
-    warn(`payment check errored: ${e.message}`, 'check the stack: docker compose logs -f coral')
-  }
+  ok('stack is up — open http://localhost:5173 and click "Start a market" to run a live, settled round')
 }
 
 // ── Verdict ───────────────────────────────────────────────────────────────────

@@ -22,6 +22,7 @@ import {
 } from '@solana/spl-token'
 import nacl from 'tweetnacl'
 import bs58 from 'bs58'
+import { fileURLToPath } from 'node:url'
 import { assertDevnet } from '@pay/agent-runtime'
 
 const PROGRAM = new PublicKey('6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J')
@@ -29,7 +30,8 @@ const MINT = new PublicKey('4Zao8ocPhmMgq7PdsYWyxvqySMGx7xb9cMftPMkEokRG') // re
 const BASE = process.env.TXLINE_BASE_URL ?? 'https://txline-dev.txodds.com'
 const RPC = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com'
 const PORT = Number(process.env.PORT ?? 8801)
-const ENV_PATH = process.env.KIT_ENV ?? new URL('../../../.env', import.meta.url).pathname.replace(/^\//, '')
+// fileURLToPath (not .pathname) so the repo-root .env resolves on macOS/Linux too, not just Windows.
+const ENV_PATH = process.env.KIT_ENV ?? fileURLToPath(new URL('../../../.env', import.meta.url))
 
 function buyerKeypair(): Keypair {
   const txt = fs.readFileSync(ENV_PATH, 'utf8')

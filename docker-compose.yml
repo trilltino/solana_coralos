@@ -15,7 +15,11 @@ services:
 
   # ── CoralOS — MCP bus that launches the agents per session ──────────────────
   coral:
-    image: ghcr.io/coral-protocol/coral-server:latest
+    # Pinned by digest for reproducibility — this is what `:latest` resolved to on 2026-06-27.
+    # Bump: docker pull ghcr.io/coral-protocol/coral-server:latest
+    #       docker inspect --format '{{index .RepoDigests 0}}' ghcr.io/coral-protocol/coral-server:latest
+    #       (browse tags: https://github.com/coral-protocol/coral-server/pkgs/container/coral-server)
+    image: ghcr.io/coral-protocol/coral-server:latest@sha256:2acd1701aed63367583b4ff4496d3a4255112f7363b4daae7c3a700acf35c6eb
     container_name: coral
     ports:
       - "5555:5555"
