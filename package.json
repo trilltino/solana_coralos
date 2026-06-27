@@ -1,0 +1,10 @@
+{
+  "name": "solana-coralos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Solana agent marketplace — run the full demo with `npm run dev` (no `just` required).",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/demo.js"
+  }
+}

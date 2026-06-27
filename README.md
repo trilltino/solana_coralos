@@ -36,31 +36,36 @@ Everything runs on **devnet** — free play money, real on-chain settlement. Key
 
 ## Quick start
 
-Two paths, same result — **Path A (`just`) is the shortcut; Path B is the identical steps by hand.**
+**Three ways, same result.** The first needs only **Node + Docker** — no extra tools.
 
-### Path A — with `just` (recommended)
+### Path A — one command, no `just` (recommended)
 
 ```sh
-just dev    # script deps → generate wallets → build images → start coral → open the dashboard
+npm run dev        # = node scripts/demo.js
 ```
 
-`just dev` prints **two wallet addresses**. **Fund both** at [faucet.solana.com](https://faucet.solana.com)
-(GitHub sign-in — it's the only devnet faucet that works; CLI/RPC airdrops are gated). Then **either**:
+Brings up a fresh coral, builds the images, mints a TxLINE token, and **opens the dashboard** — the
+whole World Cup demo. It prints **two wallet addresses**; **fund both** at
+[faucet.solana.com](https://faucet.solana.com) (GitHub sign-in — the only devnet faucet that works),
+then click **"Start a market"** in the dashboard.
 
-- **click "Start a market"** in the dashboard it opened, **or**
-- run **`just market`** in a second terminal to launch the session from the CLI.
+### Path B — with `just`
 
-Run `just` on its own to list every recipe — `just doctor` (readiness check), `just logs`, `just down` (stop everything).
-
-### Path B — by hand (no `just`)
+Same chain, if you have [`just`](https://github.com/casey/just) installed:
 
 ```sh
-npm install --prefix scripts                           # script deps (web3.js, bs58) — required before setup
-node scripts/setup.js                                  # generate 2 wallets → .env   ← then FUND BOTH at the faucet
-bash build-agents.sh                                   # build seller + buyer images
-docker compose up -d coral                             # start coral-server (MCP coordinator)
-cd examples/marketplace && npm install && npm start    # launch the market session
-docker logs -f buyer-agent                             # watch WANT → AWARD → DEPOSITED → RELEASED
+just dev           # `just` on its own lists every recipe (doctor, logs, down…)
+```
+
+### Path C — by hand
+
+```sh
+npm install --prefix scripts                                          # script deps (web3.js, bs58)
+node scripts/setup.js                                                 # 2 wallets → .env  ← then FUND BOTH
+docker build -f coral-agents/seller-agent/Dockerfile -t seller-agent:0.1.0 .
+docker build -f coral-agents/buyer-agent/Dockerfile  -t buyer-agent:0.1.0 .
+docker compose up -d coral                                            # coral-server (MCP coordinator)
+node scripts/dashboard.js                                             # feed + dashboard → "Start a market"
 ```
 
 > Stuck? `node scripts/doctor.js` checks Docker, Node, wallet funding, and that coral is up. More in [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
