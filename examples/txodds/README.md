@@ -1,8 +1,8 @@
 # Example: TxODDS World Cup Oracle
 
 > An agent that **sells verified World Cup data for devnet SOL**. It fetches verified TxODDS odds on
-> devnet, an LLM turns them into a one-line value call, and the kit's escrow settles the delivery —
-> automatically, on-chain. Free tier, devnet, no Docker.
+> devnet, turns them into fair (break-even) odds + a one-line read, and the kit's arbiter-gated escrow
+> settles the delivery — automatically, on-chain. Free tier, devnet, no Docker.
 
 This is the worked answer to the track brief — *build an agent that sells a real service and gets paid
 in SOL* — pointed at the hackathon's own dataset ([TxODDS' **TxLINE**](https://txline-docs.txodds.com)).
@@ -12,7 +12,7 @@ in SOL* — pointed at the hackathon's own dataset ([TxODDS' **TxLINE**](https:/
 ```
 examples/txodds/
   agent/
-    edge.ts       analyzeEdge(): verified odds -> an LLM value call + confidence (the product)
+    edge.ts       analyzeEdge(): verified odds -> fair (break-even) odds + an LLM read (the product)
     service.ts    the deliverService() fork point: data -> LLM edge -> the string the buyer pays for
     escrow.ts     buyer-side escrow client (deposit/release); fetches the IDL on-chain
     txline.ts     standalone TxLINE data client (guest auth + fixtures/odds/scores)
@@ -25,9 +25,13 @@ examples/txodds/
 
 ## The product
 
-`analyzeEdge()` is the on-thesis transform: **verified de-margined odds in → an LLM value call out**,
-paid for on delivery. The proxy exposes it at `/api/edge`; the same function is the body of the
-standalone `deliverService()` reference in `service.ts` if you fork the agent.
+`analyzeEdge()` is the on-thesis transform: **verified de-margined odds in → fair (break-even) odds +
+a one-line read out**, paid for on delivery. The proxy exposes it at `/api/edge`; the same function is
+the body of the standalone `deliverService()` reference in `service.ts` if you fork the agent.
+
+On delivery the proxy settles through the **arbiter** (`agent/arbiter.ts`): the buyer funds an escrow
+it can't claw back, and a neutral arbiter releases to the seller on verified delivery. The escrow
+`reference` is bound to the read (`sha256`), so the on-chain order provably *is* the data bought.
 
 ## Run it
 
@@ -67,8 +71,13 @@ stays in the proxy. Without funding/a key, the board shows clearly-labelled samp
    `subscribe(1, 4)` with the real mint.
 3. **Odds path:** `/api/odds/snapshot/{fixtureId}` — a path segment, not a query param.
 
-## The escrow contract
+## The escrow contracts
 
-The settlement spine lives in [`escrow/`](escrow/README.md) — the only Rust in the kit, deployed to
-devnet and called (not forked) by `agent/escrow.ts`. The demo runs against the deployed program with no
-local build; `escrow/README.md` covers building/redeploying your own.
+Two deployed devnet programs in [`escrow/`](escrow/README.md) — the only Rust in the kit, called (not
+forked) by the TS clients:
+- **escrow** (`R5NWNg9…CeXet`) — the settlement spine (`agent/escrow.ts`, IDL fetched on-chain).
+- **arbiter** (`FJtuVXsy…ktXd`) — the trustless wrapper the demo settles through (`agent/arbiter.ts`,
+  bundled IDL): the buyer funds a vault it can't claw back; a neutral arbiter releases to the seller.
+
+The demo runs against the deployed programs with no local build; `escrow/README.md` covers
+building/redeploying your own.

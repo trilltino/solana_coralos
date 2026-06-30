@@ -9,7 +9,7 @@
  * Request grammar (the buyer's request string after the `txline` keyword):
  *   "fixtures"          -> upcoming World Cup / Int Friendlies fixtures              (data only)
  *   "odds <fixtureId>"  -> de-margined StablePrice odds for a fixture                (data only)
- *   "edge <fixtureId>"  -> odds + an LLM value call                                  (all three pillars)
+ *   "edge <fixtureId>"  -> odds + fair (break-even) odds + an LLM read               (all three pillars)
  *
  * Pillars in play:
  *   - Data     verified TxLINE fixtures/odds, fetched on devnet (TxLineClient).

@@ -6,8 +6,9 @@
 //!
 //! **Asymmetry, stated honestly:** only the **buyer** signs `initialize` / `release` / `refund`. That
 //! protects the *buyer* — funds are conditional and refundable — but the **seller has no on-chain
-//! recourse**: a buyer could take delivery and then refund after the deadline. Making settlement
-//! trustless *both* ways needs an **arbiter** (a third signer) — see `../../contract_extension.md`.
+//! recourse** here: a buyer could take delivery and then refund after the deadline. That's fixed by the
+//! sibling **arbiter** program (`../arbiter`, deployed) — a neutral 3rd signer gates settlement via the
+//! vault-as-buyer pattern; the demo settles through it. See `../../contract_extension.md`.
 //!
 //! Security posture (from the solana-dev skill checklist):
 //! - `init` (never `init_if_needed`) — no reinitialization attacks.

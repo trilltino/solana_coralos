@@ -9,11 +9,13 @@ fair (break-even) decimal odds plus a one-line read, and on delivery the buyer e
 automatically** — a real deposit→release you can open on the Solana Explorer. Everything runs on devnet:
 free play money, real on-chain settlement. A forkable React dashboard renders the live board.
 
-> **What the escrow does (and doesn't):** it's **escrow-protected, buyer-released** settlement — the
-> buyer deposits, releases on delivery, and can refund after a deadline. It protects the **buyer**; the
-> seller isn't yet protected on-chain (a buyer could take delivery and refund). The fix is an **arbiter**
-> instruction — see [`escrow/contract_extension.md`](examples/txodds/escrow/contract_extension.md). Don't
-> read "trustless both ways" into the shipped contract.
+> **Two settlement modes.** The base escrow is **buyer-released** — the buyer deposits, releases on
+> delivery, refunds after a deadline. That protects the *buyer*, but not the seller (a buyer could take
+> delivery and refund). So the demo settles through the **arbiter** instead: a deployed wrapper program
+> (`FJtuVXsy…ktXd`) where the buyer funds a vault it can't claw back, and a **neutral arbiter** releases
+> to the seller on verified delivery — so neither side can cheat. The escrow `reference` is **bound to
+> the read** (`sha256(fixtureId·favourite·fairOdds·nonce)`), so the on-chain order provably *is* the data
+> bought. It's still a trusted-third-party arbiter (a production system would stake/decentralise it).
 
 ## The three pillars
 
@@ -36,7 +38,7 @@ Everything runs on **devnet** — free play money, real on-chain settlement. Key
 | Need | Why | Get it |
 |------|-----|--------|
 | **Node 20+** | the proxy + web UI + runtime | [nodejs.org](https://nodejs.org) |
-| **An LLM key** | the agent's value call | `ANTHROPIC_API_KEY` (default) — or `LLM_PROVIDER=openai` + `OPENAI_API_KEY` |
+| **An LLM key** | the agent's one-line read | `ANTHROPIC_API_KEY` (default) — or `LLM_PROVIDER=openai` + `OPENAI_API_KEY` |
 | **A funded devnet wallet** | the buyer signs the escrow deposit→release | generated in step 1; fund at [faucet.solana.com](https://faucet.solana.com) |
 
 > The demo still renders without a key or funding — it shows clearly-labelled sample data and skips the
@@ -77,10 +79,10 @@ npm run dev        # = node scripts/txodds.js
 This starts the **proxy** (live TxODDS data + escrow settlement, port 8801) and the **Oracle UI**
 (port 3020), and opens the browser. Select a fixture and you'll see:
 
-1. the **verified de-margined 1X2 board** (live World Cup odds),
-2. the **agent's call** — the LLM's one-line value pick + confidence,
-3. the **buyer escrow settling automatically** on delivery — deposit ↗ · release ↗ · escrow PDA ↗,
-   linked on the Solana Explorer.
+1. the **verified de-margined 1X2 board** with **fair (break-even) odds** per outcome,
+2. the **agent's read** — the LLM's one-line read of the fair line + confidence,
+3. the **arbiter settling automatically** on delivery — buyer funds → arbiter releases to the seller —
+   open ↗ · release ↗ · escrow PDA ↗, linked on the Solana Explorer.
 
 The board only ever shows fixtures with **verified live odds** (`/api/board`); it never invents
 numbers. Without live data it falls back to a clearly-labelled demo board.
@@ -118,21 +120,23 @@ modules, one per concern:
 
 ### The escrow contract — the settlement spine
 
-The only Rust in the kit: a per-order escrow program
-([`lib.rs`](examples/txodds/escrow/programs/escrow/src/lib.rs)), deployed to devnet and **called** (not
-forked) by the agent's TS client — which fetches the IDL **on-chain**, so the demo needs only the
-deployed program, not a local build.
+The only Rust in the kit: **two** deployed devnet programs, **called** (not forked) by the agent's TS
+client. The base escrow ([`escrow/lib.rs`](examples/txodds/escrow/programs/escrow/src/lib.rs)) is the
+settlement spine; the arbiter ([`arbiter/lib.rs`](examples/txodds/escrow/programs/arbiter/src/lib.rs))
+is the trustless wrapper the demo settles through.
 
-| Instruction | Does |
-|-------------|------|
-| `initialize(amount, reference, deadline)` | buyer deposits SOL into a PDA seeded by `(buyer, reference)` |
-| `release()` | buyer confirms delivery → pays the seller, closes the account, rent back to buyer |
-| `refund()` | buyer reclaims the deposit after the deadline if the seller never delivered |
+| Program | Instruction | Does |
+|---------|-------------|------|
+| **escrow** `R5NWNg9…CeXet` | `initialize(amount, reference, deadline)` | buyer deposits SOL into a PDA seeded by `(buyer, reference)` |
+| | `release()` / `refund()` | buyer pays the seller on delivery / reclaims after the deadline |
+| **arbiter** `FJtuVXsy…ktXd` | `open(amount, reference, deadline)` | payer funds a **vault PDA** that becomes the escrow's buyer (payer can't claw back) |
+| | `arbitrate_release` / `arbitrate_refund` | only the **neutral arbiter** releases to the seller / refunds the payer |
 
-It's written to the Solana security checklist: `init` (never `init_if_needed`), `has_one` on **both**
-buyer and seller, `close = buyer`, and checked math on every lamport move. **Devnet only** — never put
-a funded mainnet key in `.env`; the guard above is the backstop. See
-[`examples/txodds/escrow/README.md`](examples/txodds/escrow/README.md).
+The escrow is written to the Solana security checklist: `init` (never `init_if_needed`), `has_one` on
+**both** buyer and seller, `close = buyer`, checked math; the arbiter signs for the vault PDA via CPI,
+so no human key gates settlement after funding. **Devnet only** — never put a funded mainnet key in
+`.env`. See [`examples/txodds/escrow/README.md`](examples/txodds/escrow/README.md) and
+[`contract_extension.md`](examples/txodds/escrow/contract_extension.md).
 
 ## Repo layout
 

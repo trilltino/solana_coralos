@@ -25,12 +25,19 @@ buyer releases  → seller is paid                     (buyer confirms delivery)
 deadline passes → buyer refunds                      (seller never delivered)
 ```
 
-**This protects the buyer, not (yet) the seller.** The seller can't take funds without a `release`, and
-the buyer can't claw back funds before the deadline. But only the **buyer** signs `release`/`refund`, so
-a malicious buyer can take delivery, sit out the deadline, and `refund` — the seller delivered for
-nothing. The shipped contract is **escrow-protected and buyer-released**, *not* trustless both ways. The
-fix is an **arbiter** (a third signer that can release-to-seller or refund-to-buyer on dispute) — see
-[`contract_extension.md`](contract_extension.md). Don't read more into "settlement spine" than that.
+**The base escrow protects the buyer, not the seller.** The seller can't take funds without a `release`,
+and the buyer can't claw back before the deadline. But only the **buyer** signs `release`/`refund`, so a
+malicious buyer could take delivery, sit out the deadline, and `refund` — the seller delivered for
+nothing. So the base escrow alone is **buyer-released**, *not* trustless both ways.
+
+**That's fixed by the arbiter — and it's shipped.** [`programs/arbiter`](programs/arbiter/src/lib.rs) is
+a deployed wrapper (`FJtuVXsyXuRKqgJBEPAXmktkd13CqStapgevzGwYktXd`) that uses the vault-as-buyer pattern
+(see [`contract_extension.md`](contract_extension.md)): the payer funds a vault PDA that becomes the
+escrow's buyer, and a **neutral arbiter** is the only party that can `arbitrate_release` (pay the seller
+on verified delivery) or `arbitrate_refund` (return funds to the payer after the deadline). The demo
+settles through the arbiter, so the buyer can't take delivery and refund. It's still a *trusted*
+third-party arbiter — a production system would stake/decentralise it — but trustless between buyer and
+seller.
 
 ---
 
@@ -38,13 +45,17 @@ fix is an **arbiter** (a third signer that can release-to-seller or refund-to-bu
 
 ```
 escrow/
-  programs/escrow/src/lib.rs   the Anchor program (initialize / release / refund)
-  programs/escrow/Cargo.toml
+  Cargo.toml                    the Cargo workspace (escrow + arbiter)
   Anchor.toml
-  client/escrow.ts             TypeScript client — deposit / release / refund
-  tests/escrow.ts              integration tests (lifecycle + security) — run against devnet
+  programs/escrow/src/lib.rs    the settlement spine (initialize / release / refund)
+  programs/arbiter/src/lib.rs   the trustless wrapper (open / arbitrate_release / arbitrate_refund)
+  client/escrow.ts              TypeScript client — deposit / release / refund
+  tests/escrow.ts               integration tests (lifecycle + security) — run against devnet
   package.json
 ```
+
+The arbiter's TS client is [`../agent/arbiter.ts`](../agent/arbiter.ts) (bundled IDL at
+`../agent/arbiter_idl.json`); the demo's proxy settles through it.
 
 ### The program (`lib.rs`)
 

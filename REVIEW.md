@@ -1,5 +1,12 @@
 # Review response — can these be fixed for the demo?
 
+> **Status (shipped):** the two headline asks are **done**. (1) "Trustless settlement" softened
+> everywhere + the **arbiter** is now built & **deployed to devnet** (`FJtuVXsy…ktXd`) — the demo settles
+> through it (neutral 3rd signer; the buyer can't take delivery and refund). (2) The settlement pays a
+> **real distinct seller** with both parties labelled. Bonus: the escrow `reference` is now **bound to
+> the read** (`sha256`), so the on-chain order provably is the data bought. Items #5/#6 (parseAward,
+> `.env` double-read) and #7 (env-overridable ids) are also done; #4 (Rust CI) is the remaining one.
+
 Each point below was **verified against the current code** (not taken at face value), then triaged:
 is it accurate, can it be fixed *for the demo* (vs. a real protocol upgrade), the effort, and the call.
 

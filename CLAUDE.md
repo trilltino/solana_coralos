@@ -5,12 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What This Repo Is
 
 A TypeScript starter kit for a Solana **agent that sells verified data**: the **TxODDS World Cup
-Oracle**. An LLM agent fetches verified, de-margined World Cup odds on devnet, turns them into a
-one-line value call, and on delivery the buyer escrow **settles automatically** — a real
-deposit→release through a Solana escrow contract. The stack is pure TypeScript end-to-end; the **only
-Rust is the escrow Anchor program**, which is the **settlement spine** (not optional). A forkable React
-dashboard renders the live board. The fastest way to see it: `npm run dev` brings up the data/escrow
-proxy + the web UI and opens the browser. **No Docker required.**
+Oracle**. An LLM agent fetches verified, de-margined World Cup odds on devnet, turns them into fair
+(break-even) odds + a one-line read, and on delivery the buyer escrow **settles automatically** — a real
+deposit→release through a Solana escrow contract (gated by a neutral arbiter). The stack is pure
+TypeScript end-to-end; the **only Rust is the escrow + arbiter Anchor programs**, the **settlement
+spine** (not optional). A forkable React dashboard renders the live board. The fastest way to see it:
+`npm run dev` brings up the data/escrow proxy + the web UI and opens the browser. **No Docker required.**
 
 ## Repo Layout
 
@@ -69,17 +69,21 @@ cd examples/txodds && npm install && npm run typecheck && npm test   # incl. edg
   with a deterministic fallback (so it renders with no LLM key). Shared by the proxy and the agent.
 - `agent/escrow.ts` — the buyer-side escrow client (`makeProgram`/`deposit`/`release`/`escrowPda`). It
   fetches the program IDL **on-chain**, so only the deployed devnet program is needed, not a local build.
+- `agent/arbiter.ts` — client for the deployed **arbiter** wrapper (bundled IDL `arbiter_idl.json`).
 - `server/proxy.ts` — subscribes the buyer wallet to the free World Cup tier on devnet, then serves:
-  `/api/board` (only fixtures with verified live 1X2 odds, inlined), `/api/edge` (the agent's call),
-  `/api/settle` (a real escrow `deposit → release`). `/api/fixtures` + `/api/odds` are raw passthroughs.
-- `web/app.js` — the React app. Loads `/api/board`, renders the board + the agent's call, and on
-  delivery auto-settles (no button), showing the Explorer links when the escrow confirms.
+  `/api/board` (only fixtures with verified live 1X2 odds, inlined), `/api/edge` (the agent's read),
+  `/api/settle` (settles via the **arbiter** wrapper, falling back to the direct escrow; the escrow
+  `reference` is bound to the read as `sha256(...)`). `/api/fixtures` + `/api/odds` are raw passthroughs.
+- `web/app.js` — the React app. Loads `/api/board`, renders the board + the agent's read, and on
+  delivery auto-settles (no button), showing the 3-party arbiter settlement + Explorer links.
 
-### examples/txodds/escrow — the settlement spine
+### examples/txodds/escrow — the settlement spine (+ the arbiter)
 
-The Anchor escrow program (deployed to devnet) + its TS client. The buyer deposits into a per-order PDA
-seeded by `(buyer, reference)`, the seller delivers, the buyer releases (or refunds after a deadline).
-The `reference` is the same Solana Pay key the order is bound to. See its `README.md`.
+A Cargo workspace with **two** deployed devnet programs: `programs/escrow` (the spine — buyer deposits
+into a per-order PDA seeded by `(buyer, reference)`, releases on delivery / refunds after a deadline)
+and `programs/arbiter` (the trustless wrapper — a neutral 3rd signer gates release/refund via the
+vault-as-buyer CPI pattern, so the buyer can't take delivery and refund). The demo settles through the
+arbiter. Build with `anchor build`; the demo runs against the deployed ids. See its `README.md`.
 
 ## Key Constraints
 

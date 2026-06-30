@@ -1,7 +1,7 @@
 # The TxODDS World Cup API — what it offers, and the roadmap built strictly on it
 
 This demo sells **one real thing**: verified TxODDS **World Cup** football data, fetched through a
-token-gated Solana subscription, turned into an LLM value call, and settled in devnet SOL. The whole
+token-gated Solana subscription, turned into fair (break-even) odds + an LLM read, and settled in devnet SOL. The whole
 point is that it's *verified* — not mock, not scraped, not a second-hand feed.
 
 So the rule for every feature on this page is: **stay inside the TxLINE API.** No second odds provider,
