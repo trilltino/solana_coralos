@@ -51,7 +51,7 @@ from a real challenge. When you have the data, summarize it in one sentence and 
 
 /**
  * Parse a 402 response's `x-payment-required` header (or JSON body) into a challenge.
- * The bare-metal seller (examples/agent-economy/quickstart/server.ts) emits the header form.
+ * (Legacy pay-per-call helper — the CoralOS round settles via escrow, not 402.)
  */
 export function parse402(headers: Headers, body?: string): PaymentChallenge | null {
   const header = headers.get('x-payment-required')

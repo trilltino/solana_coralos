@@ -15,8 +15,8 @@ WANT round=… service=… arg=… budget=…        broadcast to the sellers
 
 Settlement is **escrow-only** — funds are conditional on delivery. Selection runs through the LLM
 (`pickWinner`, best value) with a deterministic cheapest fallback so a slow/missing model never hangs
-a round. See [`examples/agent-economy/escrow/`](../../examples/agent-economy/escrow/) for the program
-and [`docs/MARKETPLACE.md`](../../docs/MARKETPLACE.md) for the full protocol.
+a round. See [`examples/txodds/escrow/`](../../examples/txodds/escrow/) for the program and
+[`examples/txodds/coral/`](../../examples/txodds/coral/) for the round.
 
 ## The fork point
 
