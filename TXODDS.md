@@ -98,12 +98,8 @@ Every command self-installs on first run — see the **[Run the examples](README
 - **Confirm on the submission page** (team size cap, whether one team can enter multiple tracks or win
   multiple prizes — these were unanswered in the brief): [superteam.fun/earn/hackathon/world-cup](https://superteam.fun/earn/hackathon/world-cup).
 
-## Honest caveats
+## Run it on devnet
 
-- **Devnet.** The kit runs on Solana **devnet** — free play money, but real settlement mechanics and a
-  live Explorer link. For a mainnet product, flip the RPC (the devnet guard requires `ALLOW_MAINNET=1`);
-  never put a funded mainnet key in `.env`.
-- **Verify the feed.** The kit targets TxLINE's **free devnet tier** (World Cup & Int Friendlies, on-chain
-  price 0). Confirm the hackathon's expected endpoints/entitlements match before you rely on them.
-- **These prize/track details are from the brief you pasted** — check the official page for the
-  authoritative rules and amounts before submitting.
+The kit runs on Solana **devnet** — free play money, real settlement mechanics, and a live Explorer
+link. For a mainnet product, flip the RPC (the devnet guard requires `ALLOW_MAINNET=1`); never put a
+funded mainnet key in `.env`.

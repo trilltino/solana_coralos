@@ -96,7 +96,7 @@ Each feature lists **why it matters**, the **exact TxLINE call** it uses (no new
 - **API:** `/api/scores/snapshot/{id}` — `client.scores()` **already exists**; just expose a proxy route
   `GET /api/scores?fixtureId=`.
 - **Surface:** a live-score chip on the featured match (and cards).
-- **Honest caveat:** free-tier fixtures are usually **pre-match**, so scores are often empty until a live
+- **Note:** free-tier fixtures are usually **pre-match**, so scores are often empty until a live
   match exists in the catalog — **gate the chip on data presence** so it only appears when real.
 
 ### 4) More markets — beyond 1X2

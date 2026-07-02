@@ -144,12 +144,10 @@ build them (Anchor scaffolding, LiteSVM tests, Codama client generation, the sec
 
 ---
 
-## The honest trade-off
+## When to use the escrow
 
-- **Gain:** escrow-protected, buyer-released settlement - conditional, refundable funds instead of
-  pay-and-pray. (Seller protection needs the arbiter above; the shipped base contract protects the buyer.)
-- **Cost:** it's **Rust**, the one place the kit leaves "TypeScript end-to-end", and it adds a
-  build/deploy toolchain - the price of on-chain settlement.
-- **Middle ground:** if you only want **price stability** (not conditional settlement), escrow is
-  overkill - accept **USDC** via SPL token transfers in the TS flow. Escrow is specifically about
-  *conditional release*, not tokens.
+- **Escrow** gives conditional, refundable settlement — funds release on delivery (buyer-released in the
+  base contract; the arbiter adds seller protection).
+- It is the one **Rust** piece in an otherwise TypeScript kit and adds a build/deploy toolchain.
+- If you only need **price stability**, not conditional settlement, accept **USDC** via SPL token
+  transfers in the TS flow — escrow is specifically about *conditional release*, not tokens.
